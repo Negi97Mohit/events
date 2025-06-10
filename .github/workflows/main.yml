@@ -39,15 +39,20 @@ jobs:
           # Assuming your Python script is named 'scraper.py'
           python scraper.py # <-- IMPORTANT: Change this to your script's filename
 
-      - name: 5. Commit and push if there are changes
+      - name: 5. Commit and push if CSV exists and has changed
         run: |
+          if [ ! -f eventbrite_event_ids_requests.csv ]; then
+            echo "Scraper did not create the CSV file. This may be because no new events were found or an error occurred during scraping."
+            echo "Exiting gracefully."
+            exit 0
+          fi
+          
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git add eventbrite_event_ids_requests.csv # Add the generated file
+          git add eventbrite_event_ids_requests.csv
           
-          # Check if there are any changes to commit
           if git diff --staged --quiet; then
-            echo "No changes to commit."
+            echo "No changes to commit. The event list is up-to-date."
           else
             git commit -m "Update Eventbrite IDs CSV"
             git push
